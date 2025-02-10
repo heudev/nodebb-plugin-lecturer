@@ -1,0 +1,25 @@
+{
+    "id": "nodebb-plugin-lecturer",
+    "url": "https://github.com/yourusername/nodebb-plugin-lecturer",
+    "library": "./library.js",
+    "hooks": [
+        {
+            "hook": "static:app.load",
+            "method": "init"
+        },
+        {
+            "hook": "filter:admin.header.build",
+            "method": "addAdminNavigation"
+        }
+    ],
+    "scripts": [
+        "static/lib/main.js"
+    ],
+    "staticDirs": {
+        "static": "./static"
+    },
+    "less": [
+        "static/style.css"
+    ],
+    "templates": "static/templates"
+}

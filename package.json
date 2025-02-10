@@ -1,0 +1,24 @@
+{
+    "name": "nodebb-plugin-lecturer",
+    "version": "1.0.0",
+    "description": "NodeBB eklentisi - Derslere hoca ekleme ve oylama sistemi",
+    "main": "library.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/KULLANICI_ADINIZ/nodebb-plugin-lecturer"
+    },
+    "keywords": [
+        "nodebb",
+        "plugin",
+        "lecturer",
+        "voting"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "async": "^3.2.4"
+    },
+    "nbbpm": {
+        "compatibility": "^3.0.0"
+    }
+}

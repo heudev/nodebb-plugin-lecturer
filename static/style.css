@@ -1,0 +1,45 @@
+.lecturer-container {
+  margin: 20px 0;
+  padding: 20px;
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.lecturer-list {
+  margin-top: 20px;
+}
+
+.card {
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.vote-btn {
+  margin-right: 10px;
+}
+
+.vote-btn:last-child {
+  margin-right: 0;
+}
+
+#addLecturerModal .modal-content {
+  border-radius: 8px;
+}
+
+#addLecturerModal .modal-header {
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
