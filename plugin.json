@@ -1,6 +1,6 @@
 {
     "id": "nodebb-plugin-lecturer",
-    "url": "https://github.com/yourusername/nodebb-plugin-lecturer",
+    "url": "https://github.com/heudev/nodebb-plugin-lecturer",
     "library": "./library.js",
     "hooks": [
         {
