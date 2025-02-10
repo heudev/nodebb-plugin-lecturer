@@ -91,10 +91,16 @@ plugin.getLecturers = async function (courseSection) {
 // Ders listesini getirme fonksiyonu
 plugin.getCourses = async function () {
     try {
-        return await db.getSetMembers('courses:list');
+        const coursesList = await db.getSetMembers('courses:list');
+        // Eğer veritabanından veri gelmezse varsayılan dersleri döndür
+        if (!coursesList || coursesList.length === 0) {
+            return courses; // Varsayılan dersler dizisini kullan
+        }
+        return coursesList;
     } catch (err) {
         winston.error(`[lecturer-plugin] Dersler getirilirken hata oluştu: ${err.message}`);
-        throw err;
+        // Hata durumunda varsayılan dersleri döndür
+        return courses;
     }
 };
 
@@ -104,7 +110,21 @@ plugin.addRoutes = function ({ router, middleware }) {
         middleware.ensureLoggedIn,
     ];
 
-    router.post('/lecturer/add', middlewares, async (req, res) => {
+    // API rotalarını düzenliyoruz
+    const prefix = '/api/v1/plugins/lecturer';
+
+    // Ders listesi API'si - Önce bunu public yapalım
+    router.get(prefix + '/courses', async (req, res) => {
+        try {
+            const courses = await plugin.getCourses();
+            res.json(courses || courses);  // Eğer undefined dönerse boş array döndür
+        } catch (err) {
+            winston.error(`[lecturer-plugin] Dersler getirilirken hata oluştu: ${err.message}`);
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    router.post(prefix + '/add', middlewares, async (req, res) => {
         try {
             const result = await plugin.addLecturer(
                 req.body.courseSection,
@@ -117,7 +137,7 @@ plugin.addRoutes = function ({ router, middleware }) {
         }
     });
 
-    router.post('/lecturer/vote', middlewares, async (req, res) => {
+    router.post(prefix + '/vote', middlewares, async (req, res) => {
         try {
             const result = await plugin.voteLecturer(
                 req.body.courseSection,
@@ -131,20 +151,10 @@ plugin.addRoutes = function ({ router, middleware }) {
         }
     });
 
-    router.get('/lecturer/list/:courseSection', async (req, res) => {
+    router.get(prefix + '/list/:courseSection', async (req, res) => {
         try {
             const lecturers = await plugin.getLecturers(req.params.courseSection);
             res.json(lecturers);
-        } catch (err) {
-            res.status(500).json({ error: err.message });
-        }
-    });
-
-    // Ders listesi API'si
-    router.get('/lecturer/courses', async (req, res) => {
-        try {
-            const courses = await plugin.getCourses();
-            res.json(courses);
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
@@ -154,28 +164,26 @@ plugin.addRoutes = function ({ router, middleware }) {
 // Eklenti başlatma
 plugin.init = async function (params) {
     try {
-        winston.info('[lecturer-plugin] Eklenti başlatıldı');
+        winston.info('[lecturer-plugin] Eklenti başlatılıyor...');
 
-        // Tüm dersleri kontrol et ve eksik olanları ekle
+        // Önce courses:list setini temizleyelim
+        await db.delete('courses:list');
+
+        // Tüm dersleri kontrol et ve ekle
         for (const course of courses) {
-            const courseKey = `course:${course}`;
-            const exists = await db.exists(courseKey);
-
-            if (!exists) {
-                await db.setObject(courseKey, {
-                    name: course,
-                    createdAt: Date.now()
-                });
-
-                // Dersi genel ders listesine ekle
+            try {
+                // Dersi doğrudan listeye ekle
                 await db.setAdd('courses:list', course);
-                winston.info(`[lecturer-plugin] Yeni ders eklendi: ${course}`);
+                winston.info(`[lecturer-plugin] Ders eklendi: ${course}`);
+            } catch (err) {
+                winston.error(`[lecturer-plugin] Ders eklenirken hata oluştu (${course}): ${err.message}`);
             }
         }
 
-        winston.info('[lecturer-plugin] Ders listesi kontrolü tamamlandı');
+        winston.info('[lecturer-plugin] Eklenti başarıyla başlatıldı');
+        return;
     } catch (err) {
-        winston.error(`[lecturer-plugin] Eklenti başlatılırken hata oluştu: ${err.message}`);
+        winston.error(`[lecturer-plugin] Eklenti başlatılırken kritik hata oluştu: ${err.message}`);
         throw err;
     }
 };

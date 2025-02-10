@@ -3,23 +3,28 @@
 $(document).ready(function () {
     // Dersleri yükle
     function loadCourses() {
+        const select = $('#courseSection');
+        select.empty();
+        select.append('<option value="">Ders Seçiniz</option>');
+
         $.ajax({
             url: '/api/v1/plugins/lecturer/courses',
             method: 'GET',
             success: function (courses) {
-                const select = $('#courseSection');
-                select.empty();
-
-                // Varsayılan seçenek
-                select.append('<option value="">Ders Seçiniz</option>');
-
-                // Dersleri ekle
-                courses.forEach(function (course) {
-                    select.append(`<option value="${course}">${course}</option>`);
-                });
+                if (Array.isArray(courses) && courses.length > 0) {
+                    // Dersleri ekle
+                    courses.forEach(function (course) {
+                        select.append(`<option value="${course}">${course}</option>`);
+                    });
+                } else {
+                    console.warn('Hiç ders bulunamadı');
+                    select.append('<option value="" disabled>Ders bulunamadı</option>');
+                }
             },
-            error: function () {
-                alert('Dersler yüklenirken bir hata oluştu!');
+            error: function (xhr, status, error) {
+                console.error('Dersler yüklenirken hata:', error);
+                select.append('<option value="" disabled>Dersler yüklenemedi</option>');
+                app.alertError('Dersler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin veya daha sonra tekrar deneyin.');
             }
         });
     }
